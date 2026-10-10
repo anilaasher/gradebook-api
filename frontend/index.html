@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Gradebook</title>
+</head>
+<body>
+  <h1>Gradebook</h1>
+    <input id="name" placeholder="Student name">
+  <button onclick="addStudent()">Add student</button>
+
+  <ul id="students"></ul>
+
+  <script>
+    const API = "http://127.0.0.1:8000";
+
+    async function loadStudents() {
+      const response = await fetch(API + "/students");
+      const data = await response.json();
+
+      const list = document.getElementById("students");
+      list.innerHTML = "";
+      for (const name of data.students) {
+        const item = document.createElement("li");
+        item.textContent = name;
+        list.appendChild(item);
+      }
+    }
+    
+    async function addStudent() {
+  const name = document.getElementById("name").value;
+  if (!name) return;  // do nothing if the box is empty
+
+  // Call POST /students/{name}; encodeURIComponent makes spaces and symbols URL-safe
+  await fetch(API + "/students/" + encodeURIComponent(name), { method: "POST" });
+
+  document.getElementById("name").value = "";  // clear the box
+  loadStudents();  // reload the list so the new student shows up
+}
+    loadStudents();
+  </script>
+</body>
+</html>
