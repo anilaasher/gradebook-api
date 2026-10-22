@@ -11,7 +11,10 @@ app = FastAPI()
 # Only the frontend's addresses may call this API from a browser
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1:5500", "http://localhost:5500"],
+    allow_origins=[
+        "http://127.0.0.1:5500", "http://localhost:5500",   # old HTML page
+        "http://127.0.0.1:5173", "http://localhost:5173",   # React app
+    ],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -64,3 +67,17 @@ def get_student(name: str):
     average = sum(scores) / len(scores) if scores else None
     db.close()
     return {"name": name, "grades": scores, "average": average}
+
+@app.delete("/students/{name}")
+def delete_student(name: str):
+    # Remove a student and all of their grades
+    db = SessionLocal()
+    student = db.query(Student).filter(Student.name == name).first()
+    if student is None:
+        db.close()
+        raise HTTPException(status_code=404, detail=f"{name} not found")
+    db.query(Grade).filter(Grade.student_id == student.id).delete()  # grades first
+    db.delete(student)                                               # then the student
+    db.commit()
+    db.close()
+    return {"message": f"Deleted {name}"}

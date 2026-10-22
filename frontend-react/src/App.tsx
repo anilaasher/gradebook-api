@@ -1,49 +1,79 @@
+import "./App.css";
 import { useEffect, useState } from "react";
 import StudentItem from "./StudentItem";
-
-const API = "http://127.0.0.1:8000";
-
-// Ask the API for the list of student names
-async function fetchStudents(): Promise<string[]> {
-  const response = await fetch(API + "/students");
-  const data = await response.json();
-  return data.students;
-}
+import StudentCard from "./StudentCard";
+import { fetchStudents, addStudent, fetchGrades, deleteStudent } from "./api";
 
 function App() {
-  const [newName, setNewName] = useState("");
-  // students is the current list; setStudents replaces it and redraws the page
-  const [students, setStudents] = useState<string[]>([]);
+  // State: values React remembers and redraws the page for
+  const [students, setStudents] = useState<string[]>([]);   // all student names
+  const [newName, setNewName] = useState("");               // text in the input box
+  const [selected, setSelected] = useState<string | null>(null);  // clicked student
+  const [grades, setGrades] = useState<number[]>([]);       // grades of the selected student
 
-  // Runs once, when the page first loads
+  // Runs once, when the page first appears: load the student list
   useEffect(() => {
-  fetchStudents().then(setStudents);
-}, []);
+    fetchStudents().then(setStudents);
+  }, []);
 
-async function addStudent() {
+  useEffect(() => {
+  if (!selected) return;  // nobody selected yet
+  fetchGrades(selected).then(setGrades);
+}, [selected]);
+
+  // Called by the button: save a new student, then reload the list
+  async function handleAddStudent() {
   if (!newName) return;  // ignore an empty box
-
-  // Send a POST to your API, which saves the student in gradebook.db
-  await fetch(API + "/students/" + encodeURIComponent(newName), { method: "POST" });
-
+  await addStudent(newName);
   setNewName("");                      // clear the box
-  setStudents(await fetchStudents());  // reload the list from the database
+  setStudents(await fetchStudents());  // reload the list
 }
+async function handleDeleteStudent(name: string) {
+  // Ask first, because deleting is permanent
+  if (!window.confirm("Delete " + name + " and all their grades?")) return;
 
+  await deleteStudent(name);                // remove it through the API
+  if (selected === name) setSelected(null); // clear the right panel if they were open
+  setStudents(await fetchStudents());       // reload the list
+}
   return (
-    <div>
-      <h1>Gradebook</h1>
-      <input
-       value={newName}
-       onChange={(e) => setNewName(e.target.value)}
-       placeholder="Enter a new student name"
-        />
-        <button onClick={addStudent}>Add Student</button>
-      <ul>
-        {students.map(  (name) => ( <StudentItem key={name} name={name}  />)   )}
-      </ul>
+  <main className="app">
+    <h1>Gradebook</h1>
+
+    <div className="layout">
+      {/* Left panel: manage the students */}
+      <section className="panel">
+        <h2>Students</h2>
+
+        <div className="add-student">
+          <input
+            value={newName}
+            onChange={(e) => setNewName(e.target.value)}
+            placeholder="Enter a new student name"
+          />
+          <button onClick={handleAddStudent}>Add Student</button>
+        </div>
+
+        <ul>
+          {students.map((name) => (
+            <StudentItem key={name} name={name} onSelect={setSelected}   onDelete={handleDeleteStudent}
+/>
+          ))}
+        </ul>
+      </section>
+
+      {/* Right panel: the selected student */}
+      <section className="panel">
+        <h2>Selected student</h2>
+        {selected ? (
+          <StudentCard name={selected} grades={grades} />
+        ) : (
+          <p>Click a student to see their grades.</p>
+        )}
+      </section>
     </div>
-  );
+  </main>
+);
 }
 
 export default App;

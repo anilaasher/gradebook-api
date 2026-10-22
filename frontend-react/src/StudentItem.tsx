@@ -1,16 +1,23 @@
-//the shape of the inputs this component accepts
-type StudentItemProps={
-
-    name:String;
+type StudentItemProps = {
+  name: string;
+  onSelect: (name: string) => void;
+  onDelete: (name: string) => void;
 };
 
-// Acomponent : a functiont that takes props and retun UI
-
-function StudentItem({name}:StudentItemProps)
-{
-    return(
-        <li>{name} </li>
-    );
+function StudentItem({ name, onSelect, onDelete }: StudentItemProps) {
+  return (
+    <li onClick={() => onSelect(name)}>
+      <span>{name}</span>
+      <button
+        onClick={(e) => {
+          e.stopPropagation(); // don't also select the row
+          onDelete(name);
+        }}
+      >
+        Delete
+      </button>
+    </li>
+  );
 }
 
 export default StudentItem;

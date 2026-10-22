@@ -1,0 +1,4 @@
+/* Colours for the average grade. Change these any time. */
+.average-good { color: blue; }
+.average-ok   { color: orange; }
+.average-low  { color: red; }
