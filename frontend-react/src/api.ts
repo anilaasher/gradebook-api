@@ -20,3 +20,11 @@ export async function fetchGrades(name: string): Promise<number[]> {
 export async function deleteStudent(name: string): Promise<void> {
   await fetch(API + "/students/" + encodeURIComponent(name), { method: "DELETE" });
 }
+// Save a grade for a student. Returns false if the API rejects it (e.g. 150).
+export async function addGrade(name: string, score: number): Promise<boolean> {
+  const response = await fetch(
+    API + "/students/" + encodeURIComponent(name) + "/grades?score=" + score,
+    { method: "POST" }
+  );
+  return response.ok;
+}
