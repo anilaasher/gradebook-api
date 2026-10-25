@@ -1,12 +1,18 @@
 # Depends lets an endpoint ask FastAPI to provide something, such as a session
-from fastapi import FastAPI, HTTPException, Query, Depends
+from fastapi import FastAPI, HTTPException,  Depends
 
+# FastAPI: the framework, plus Depends for things FastAPI provides to endpoints
+from fastapi import FastAPI, HTTPException, Query, Depends
 from fastapi.middleware.cors import CORSMiddleware
-# get_db is the function that opens and closes a session for each request
-from database import engine, SessionLocal, Base, get_db
-from models import Student, Grade
+# IntegrityError is raised when the database refuses a save, e.g. a duplicate name
+from sqlalchemy.exc import IntegrityError
 # Session is only a type label, so VS Code can help with the `db` variable
 from sqlalchemy.orm import Session
+
+# Our own files
+from database import engine, Base, get_db
+from models import Student, Grade
+from schemas import StudentCreate,GradeCreate
 
 
 # Create gradebook.db and its tables if they don't exist yet
@@ -24,14 +30,29 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+def get_student_or_404(name: str, db: Session = Depends(get_db)) -> Student:
+    # `name` is read from the {name} part of the address
+    student = db.query(Student).filter(Student.name == name).first()
+    if student is None:
+        # The one place in the app that answers "student not found"
+        raise HTTPException(status_code=404, detail=f"{name} not found")
+    return student
+
+@app.post("/students", status_code=201)
+def add_student(student: StudentCreate, db: Session = Depends(get_db)):
+    # FastAPI has already checked `student` against the schema before this runs
+    try:
+        db.add(Student(name=student.name))
+        db.commit()
+    except IntegrityError:
+        # The database refused a duplicate name: undo the failed save first
+        db.rollback()
+        # 409 = conflict with something that already exists
+        raise HTTPException(status_code=409, detail=f"{student.name} already exists")
+    return {"message": f"Added {student.name}"}
 
 
-@app.post("/students/{name}")
-def add_student(name: str, db: Session = Depends(get_db)):
-    # Save a new student; FastAPI opens and closes the session for us
-    db.add(Student(name=name))
-    db.commit()
-    return {"message": f"Added {name}"}
+
 
 
 @app.get("/students")
@@ -42,41 +63,34 @@ def list_students(db: Session = Depends(get_db)):
     return {"students": [s.name for s in students]}
 
 
-@app.post("/students/{name}/grades")
-def add_grade(name: str, score: float = Query(ge=0, le=100), db: Session = Depends(get_db)):
-    # Find the student the grade belongs to
-    student = db.query(Student).filter(Student.name == name).first()
-    if student is None:
-        raise HTTPException(status_code=404, detail=f"{name} not found")
-    # Save the grade, linked to the student by id
-    db.add(Grade(score=score, student_id=student.id))
-    db.commit()
-    return {"message": f"Added grade {score} for {name}"}
 
+
+@app.post("/students/{name}/grades", status_code=201)
+def add_grade(
+    grade: GradeCreate,
+    student: Student = Depends(get_student_or_404),
+    db: Session = Depends(get_db),
+):
+    # `grade` was read from the JSON body and checked against GradeCreate
+    # `student` was found by the dependency, or the request stopped with a 404
+    db.add(Grade(score=grade.score, student_id=student.id))
+    db.commit()
+    return {"message": f"Added grade {grade.score} for {student.name}"}
 
 @app.get("/students/{name}")
-def get_student(name: str, db: Session = Depends(get_db)):
-    # Find the student by name
-    student = db.query(Student).filter(Student.name == name).first()
-    if student is None:
-        # No db.close() needed any more, even when we stop early with an error
-        raise HTTPException(status_code=404, detail=f"{name} not found")
-
-    # Collect their grades and work out the average
+def get_student(student: Student = Depends(get_student_or_404), db: Session = Depends(get_db)):
+    # `student` has already been found, or the request stopped with a 404
     grades = db.query(Grade).filter(Grade.student_id == student.id).all()
     scores = [g.score for g in grades]
     # Average only if there are grades, otherwise None (avoids dividing by zero)
     average = sum(scores) / len(scores) if scores else None
-    return {"name": name, "grades": scores, "average": average}
+    return {"name": student.name, "grades": scores, "average": average}
 
 @app.delete("/students/{name}")
-def delete_student(name: str, db: Session = Depends(get_db)):
-    # Find the student to remove
-    student = db.query(Student).filter(Student.name == name).first()
-    if student is None:
-        raise HTTPException(status_code=404, detail=f"{name} not found")
+def delete_student(student: Student = Depends(get_student_or_404), db: Session = Depends(get_db)):
     # Delete their grades first, then the student, so no orphan grades are left behind
     db.query(Grade).filter(Grade.student_id == student.id).delete()
     db.delete(student)
     db.commit()
-    return {"message": f"Deleted {name}"}
+    return {"message": f"Deleted {student.name}"}
+
