@@ -18,3 +18,15 @@ python -m uvicorn app:app --reload
 python -m pip install -r requirements-dev.txt
 python -m pytest -v
 ```
+
+## Endpoints
+
+| Method | Path | What it does |
+|--------|------|--------------|
+| POST | /students | Add a student (JSON body with `name`) |
+| GET | /students | List all student names |
+| GET | /students/{name} | Get one student's grades and average |
+| POST | /students/{name}/grades | Add a grade (JSON body with `score`) |
+| DELETE | /students/{name} | Delete a student and their grades |
+
+With the API running, interactive documentation is at http://127.0.0.1:8000/docs
