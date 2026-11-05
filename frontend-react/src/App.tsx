@@ -1,5 +1,4 @@
 
-import "./App.css";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
@@ -60,7 +59,7 @@ async function handleAddGrade() {
 
 <div className="grid gap-8 md:grid-cols-2">
           {/* Left panel: manage the students */}
-      <section className="panel">
+      <section >
         <h2 className="mb-3 text-xl font-semibold">Students</h2>
 
         <div className="mb-4  flex gap-2">
@@ -81,7 +80,7 @@ async function handleAddGrade() {
       </section>
 
       {/* Right panel: the selected student */}
-      <section className="panel">
+      <section >
         <h2 className="mb-3 text-xl font-semibold">Selected student</h2>
         {selected ? (
   <>
