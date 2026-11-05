@@ -33,3 +33,10 @@ python -m pytest -v
 | DELETE | /students/{name} | Delete a student and their grades |
 
 With the API running, interactive documentation is at http://127.0.0.1:8000/docs
+
+## What I learned
+
+- **Testing:** Tests use a completely different database file (`test.db`), so the real database is never touched at all. The setup creates empty tables, and each test then adds whatever data it needs itself. The tables are created before each test and dropped after it, which is why one test can never affect another.
+- **Automation:** Each time we push code to GitHub, pytest runs to check for problems. The tests run on a fresh computer in the cloud, and the result shows as a green tick or red cross.
+- **Modern front end:** Tailwind gives you small ready-made styling words, and shadcn/ui gives you ready-made components (like Button and Card). shadcn copies the component code into your project, so you own it.
+- **Working habits:** `requirements.txt` is the list of dependencies that the Gradebook API needs, and pip reads it when the project is installed on a new computer. `COMMANDS.md` is a cheat sheet of the commands for running the API server and React, and for installing the Python and React packages.
