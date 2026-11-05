@@ -1,3 +1,5 @@
+import "./App.css";
+import { Button } from "@/components/ui/button";
 type StudentItemProps = {
   name: string;
   onSelect: (name: string) => void;
@@ -6,16 +8,19 @@ type StudentItemProps = {
 
 function StudentItem({ name, onSelect, onDelete }: StudentItemProps) {
   return (
-    <li onClick={() => onSelect(name)}>
+    <li
+  className="flex cursor-pointer items-center justify-between rounded-md border px-3 py-2 hover:bg-muted"
+  onClick={() => onSelect(name)}
+>
       <span>{name}</span>
-      <button
+      <Button variant="destructive" size="sm" 
         onClick={(e) => {
           e.stopPropagation(); // don't also select the row
           onDelete(name);
         }}
       >
         Delete
-      </button>
+      </Button>
     </li>
   );
 }

@@ -1,5 +1,7 @@
 
 import "./App.css";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import StudentItem from "./StudentItem";
 import StudentCard from "./StudentCard";
@@ -53,24 +55,24 @@ async function handleAddGrade() {
   setGrades(await fetchGrades(selected));  // reload this student's grades
 }
   return (
-  <main className="app">
-    <h1>Gradebook</h1>
+<main className="mx-auto max-w-4xl p-6">
+      <h1 className="text-3xl font-bold">Gradebook</h1>
 
-    <div className="layout">
-      {/* Left panel: manage the students */}
+<div className="grid gap-8 md:grid-cols-2">
+          {/* Left panel: manage the students */}
       <section className="panel">
-        <h2>Students</h2>
+        <h2 className="mb-3 text-xl font-semibold">Students</h2>
 
-        <div className="add-student">
-          <input
+        <div className="mb-4  flex gap-2">
+          <Input
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
             placeholder="Enter a new student name"
           />
-          <button onClick={handleAddStudent}>Add Student</button>
+          <Button onClick={handleAddStudent}>Add Student</Button>
         </div>
 
-        <ul>
+        <ul className="space-y-2">
           {students.map((name) => (
             <StudentItem key={name} name={name} onSelect={setSelected}   onDelete={handleDeleteStudent}
 />
@@ -80,19 +82,19 @@ async function handleAddGrade() {
 
       {/* Right panel: the selected student */}
       <section className="panel">
-        <h2>Selected student</h2>
+        <h2 className="mb-3 text-xl font-semibold">Selected student</h2>
         {selected ? (
   <>
     <StudentCard name={selected} grades={grades} />
 
-    <div>
-      <input
+<div className="mb-4 flex gap-2">
+        <Input
         type="number"
         value={score}
         onChange={(e) => setScore(e.target.value)}
         placeholder="Grade (0-100)"
       />
-      <button onClick={handleAddGrade}>Add Grade</button>
+      <Button onClick={handleAddGrade}>Add Grade</Button>
     </div>
 
     {/* Show a message only if there is one */}

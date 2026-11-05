@@ -16,6 +16,10 @@
     "noEmit": true,
     "jsx": "react-jsx",
 
+        /* Path alias: @ means the src folder */
+    "paths": {
+      "@/*": ["./src/*"]
+    },
     /* Linting */
     "noUnusedLocals": true,
     "noUnusedParameters": true,
