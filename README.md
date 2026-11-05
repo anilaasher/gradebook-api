@@ -5,6 +5,9 @@
 A web API for managing students and their grades, built with Python, FastAPI and SQLite, with a React front end.
 
 
+![Gradebook screenshot](docs/screenshot.png)
+
+
 ## Run the API
 
 ```
