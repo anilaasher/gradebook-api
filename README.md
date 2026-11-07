@@ -14,6 +14,13 @@ A web API for managing students and their grades, built with Python, FastAPI and
 python -m pip install -r requirements.txt
 python -m uvicorn app:app --reload
 ```
+## Run with Docker
+
+```
+docker compose up --build
+```
+
+The API is then available at http://localhost:8000/docs. The database is kept in a Docker volume, so the data survives restarts.
 
 ## Run the tests
 
