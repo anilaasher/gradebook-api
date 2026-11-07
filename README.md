@@ -16,8 +16,13 @@ python -m uvicorn app:app --reload
 ```
 ## Run with Docker
 
+Requires [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+
 ```
 docker compose up --build
+```
+
+The API is then available at http://localhost:8000/docs. The database is kept in a Docker volume, so the data survives restarts.
 ```
 
 The API is then available at http://localhost:8000/docs. The database is kept in a Docker volume, so the data survives restarts.
