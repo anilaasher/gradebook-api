@@ -1,0 +1,9 @@
+myEnvironment
+frontend-react
+.git
+__pycache__
+*.db
+.coverage
+docs
+docker-demo
+frontend
